@@ -22,27 +22,31 @@ public class PlayerController : MonoBehaviour
 
 	//	Public Variables
 	public float defaultGravityScale = 10f;								//	Default gravity scale for player
+	public AudioClip jumpAudio;											//	Audio clip for jumping
+	public AudioClip landedAudio;										//	Audio clip for landing
 
 	//	Hidden From Inspector
 	[HideInInspector]
-	public Animator m_Animator;											//	Reference to player's Animator
+	public Animator _Animator;											//	Reference to player's Animator
 	[HideInInspector]
-	private Collider2D[] m_Colliders;									//	Array of player's colliders
+	private Collider2D[] _Colliders;									//	Array of player's colliders
 
 	//	Serializable Fields
-	[SerializeField] private bool m_AirControl; 						// Whether or not player can steer while jumping
-	[SerializeField] private float m_MaxSpeed = 10f;					//	Fastest player can travel on X-axis
-	[SerializeField] private float m_JumpForce = 50f;					//	Amount of force added when player jumps
-	[SerializeField] private LayerMask m_WhatIsGround; 					//	A mask determining what is ground to character
+	[SerializeField] private bool _AirControl; 							// Whether or not player can steer while jumping
+	[SerializeField] private float _MaxSpeed = 3f;						//	Fastest player can travel on X-axis
+	[SerializeField] private float _JumpForce = 300f;					//	Amount of force added when player jumps
+	[SerializeField] private LayerMask _WhatIsGround; 					//	A mask determining what is ground to character
 
 	//	Private Variables
-	private bool m_FacingLeft;											//	Let's us know if our player is facing left
-	private bool m_Grounded;											//	Let's us know if player is grounded
-	private float m_InputDirection;										//	X value of m_MoveVector
-	private float m_VerticalVelocity;									//	Y value of m_MoveVector
-	private Vector2 m_MoveVector;										//	Vector that temporarily stores player movement
-	private Transform m_GroundCheck;									//	Transform for GroundCheck GameObject
-	private Rigidbody2D m_Rigidbody2D;									//	Reference to player's rigidbody2D
+	private bool _FacingLeft;											//	Let's us know if our player is facing left
+	private bool _Grounded;												//	Let's us know if player is grounded
+	private bool _PlayLandedAudio;										//	LEt's us know if we should play landedAudio
+	private float _InputDirection;										//	X value of _MoveVector
+	private float _VerticalVelocity;									//	Y value of _MoveVector
+	private Vector2 _MoveVector;										//	Vector that temporarily stores player movement
+	private Transform _GroundCheck;										//	Transform for GroundCheck GameObject
+	private Rigidbody2D _Rigidbody2D;									//	Reference to player's rigidbody2D
+	private AudioSource _AudioSource;									//	Reference to Audio Source
 
 	//	Constants
 	const float k_GroundedRadius = 0.01f;								//	Radius of GroundCheck GameObject
@@ -56,11 +60,13 @@ public class PlayerController : MonoBehaviour
 	private void Awake()
 	{
 		INSTANCE = this;
-		m_AirControl = true;
-		m_GroundCheck = transform.Find ("GroundCheck");
-		m_Animator = GetComponent<Animator> ();
-		m_Rigidbody2D = GetComponent<Rigidbody2D>();
-		m_Colliders = this.GetComponents<Collider2D> ();
+		_AirControl = true;
+		_GroundCheck = transform.Find ("GroundCheck");
+		_Animator = GetComponent<Animator> ();
+		_Rigidbody2D = GetComponent<Rigidbody2D>();
+		_Colliders = this.GetComponents<Collider2D> ();
+		_AudioSource = GetComponent<AudioSource> ();
+		_PlayLandedAudio = true;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -83,21 +89,21 @@ public class PlayerController : MonoBehaviour
 	public void Move(float move, bool jump)
 	{
 		// Only control player if grounded or if airControl is on
-		if (m_Grounded || m_AirControl)
+		if (_Grounded || _AirControl)
 		{
 			// The Speed animator parameter is set to the absolute value of the horizontal inpput
-			m_Animator.SetFloat("Speed", Mathf.Abs(move));
+			_Animator.SetFloat("Speed", Mathf.Abs(move));
 
 			// Move character
-			m_Rigidbody2D.velocity = new Vector2(move * m_MaxSpeed, m_Rigidbody2D.velocity.y);
+			_Rigidbody2D.velocity = new Vector2(move * _MaxSpeed, _Rigidbody2D.velocity.y);
 
-			if (move > 0 && !m_FacingLeft)
+			if (move > 0 && !_FacingLeft)
 			{
 				// Flips player
 				Flip ();
 			}
 			// Otherwise player should be facing left
-			else if (move < 0 && m_FacingLeft)
+			else if (move < 0 && _FacingLeft)
 			{
 				// Flips player
 				Flip ();
@@ -105,12 +111,14 @@ public class PlayerController : MonoBehaviour
 		}
 
 		// If the player should jump
-		if (m_Grounded && jump && m_Animator.GetBool("Ground"))
+		if (_Grounded && jump && _Animator.GetBool("Ground"))
 		{
 			// Adds vertical force to player
-			m_Grounded = false;
-			m_Animator.SetBool ("Ground", false);
-			m_Rigidbody2D.AddForce (new Vector2 (0f, m_JumpForce));
+			_Grounded = false;
+			_Animator.SetBool ("Ground", false);
+			_PlayLandedAudio = true;
+			_Rigidbody2D.AddForce (new Vector2 (0f, _JumpForce));
+			_AudioSource.PlayOneShot (jumpAudio, 0.5f);
 		}
 	}
 
@@ -122,7 +130,7 @@ public class PlayerController : MonoBehaviour
 	public void Flip ()
 	{
 		// Switch the way the player is labeled as facing
-		m_FacingLeft = !m_FacingLeft;
+		_FacingLeft = !_FacingLeft;
 
 		// Multiply the player's x local scale by -1
 		Vector3 theScale = transform.localScale;
@@ -143,20 +151,20 @@ public class PlayerController : MonoBehaviour
 		int playerLayer = LayerMask.NameToLayer ("Player");
 
 		Physics2D.IgnoreLayerCollision (enemyLayer, playerLayer);
-		foreach (Collider2D collider in m_Colliders)
+		foreach (Collider2D collider in _Colliders)
 		{
 			collider.enabled = false;
 			collider.enabled = true;
 		}
 		// Start Flinching Animation
-		m_Animator.SetLayerWeight(1,1);
+		_Animator.SetLayerWeight(1,1);
 
 		// Wait for flinch timer to expire
 		yield return new WaitForSeconds (flinchTimer);
 
 		// Stops flinching animation and re-enables collision
 		Physics2D.IgnoreLayerCollision (enemyLayer, playerLayer, false);
-		m_Animator.SetLayerWeight (1, 0);
+		_Animator.SetLayerWeight (1, 0);
 	}
 		
 	/*--------------------------------------------------------------------------------------*/
@@ -178,22 +186,29 @@ public class PlayerController : MonoBehaviour
 	private void FixedUpdate()
 	{
 		//	We always assume we are not grounded
-		m_Grounded = false;
+		_Grounded = false;
 
 		//	The player is grounded if a circle cast to the ground position hits anything labeld as ground
 		//	This can be done with layers
-		Collider2D[] groundColliders = Physics2D.OverlapCircleAll (m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
+		Collider2D[] groundColliders = Physics2D.OverlapCircleAll (_GroundCheck.position, k_GroundedRadius, _WhatIsGround);
 		for (int i = 0; i < groundColliders.Length; i++)
 		{
-			if (groundColliders [i].gameObject != gameObject)
-				m_Grounded = true;
+			if (groundColliders [i].gameObject != gameObject) 
+			{
+				_Grounded = true;
+			}
+			if (_PlayLandedAudio)
+			{
+				_AudioSource.PlayOneShot (landedAudio, 1f);
+				_PlayLandedAudio = false;
+			}
 		}
 			
 		//	Sets the Idle or Running animation
-		m_Animator.SetBool ("Ground", m_Grounded);
+		_Animator.SetBool ("Ground", _Grounded);
 
 		//	Set the vertical animation
-		m_Animator.SetFloat ("vSpeed", m_Rigidbody2D.velocity.y);
+		_Animator.SetFloat ("vSpeed", _Rigidbody2D.velocity.y);
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -215,7 +230,7 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public bool setAirControl (bool b)
 	{
-		return m_AirControl = b;
+		return _AirControl = b;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -226,7 +241,7 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public bool isFacingLeft()
 	{
-		return m_FacingLeft;
+		return _FacingLeft;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -237,7 +252,7 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void setGrounded(bool b)
 	{
-		m_Grounded = b;
+		_Grounded = b;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -248,18 +263,18 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public bool isGrounded()
 	{
-		return m_Grounded;
+		return _Grounded;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
 	/*	getJumpForce: tells us what is the characer's jumpforce								*/
-	/*		returns: the float value for m_JumpForce										*/
+	/*		returns: the float value for _JumpForce											*/
 	/*																						*/
 	/*--------------------------------------------------------------------------------------*/
 	public float getJumpForce()
 	{
-		return m_JumpForce;
+		return _JumpForce;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -270,18 +285,18 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void setJumpForce(float f)
 	{
-		m_JumpForce = f;
+		_JumpForce = f;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
 	/*	getMaxSpeed: tells us what is the characetr's max speed								*/
-	/*		returns: the float value for m_MaxSpeed											*/
+	/*		returns: the float value for _MaxSpeed											*/
 	/*																						*/
 	/*--------------------------------------------------------------------------------------*/
 	public float getMaxSpeed()
 	{
-		return m_MaxSpeed;
+		return _MaxSpeed;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -292,6 +307,6 @@ public class PlayerController : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void setMaxSpeed(float f)
 	{
-		m_MaxSpeed = f;
+		_MaxSpeed = f;
 	}
 }

@@ -1,6 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/*
+ * 
+ * 	TODO:	AUDIO When charging
+ * 			AUDIO when jumping
+ * 
+ */ 
+
 /*--------------------------------------------------------------------------------------*/
 /*																						*/
 /*	Player: Communicates current state to PlayerController								*/
@@ -21,26 +28,36 @@ public class Player : MonoBehaviour
 	/*	[CLASS]																				*/
 	/*	PlayerStats: Stores player's internal stats											*/
 	/*																						*/
-	///*--------------------------------------------------------------------------------------*/
+	/*--------------------------------------------------------------------------------------*/
 	[System.Serializable]
 	public class PlayerStats
 	{
 		//	Public Variables
 		public int Health = 10;
+		public int playerRed = 0;
+		public int playerGreen = 0;
+		public int playerBlue = 0;
+
+		public int MAX_CHARGE = 3;
 	}
 
-	public int yLowerLimit = -20;							//	How far the player can go down without dying
+	public int yLowerLimit = -8;							//	How far the player can go down without dying
 	public float flinchTimer = 2f;							//	How long in seconds the player flinches for
 	public float springForce = 400f;						//	For implementation of a spring
+	public AudioClip chargedUpAudio;						//	Audio clip for charging up
 	public PlayerStats playerStats = new PlayerStats();		//	Reference to player stats
+
+	// Private Variables
+	private AudioSource _AudioSource;						//	Reference to Audio Source for player
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
 	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
 	/*																						*/
-	///*--------------------------------------------------------------------------------------*/
+	/*--------------------------------------------------------------------------------------*/
 	void Start () 
 	{
+		_AudioSource = GetComponent<AudioSource> ();
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -61,6 +78,26 @@ public class Player : MonoBehaviour
 		{
 			PlayerController.INSTANCE.TriggerDamage (flinchTimer);
 		}
+	}
+
+	public void ChargeUp(bool red, bool green, bool blue)
+	{
+		_AudioSource.PlayOneShot (chargedUpAudio, 0.5f);
+		if (red)
+		{
+			playerStats.playerRed = playerStats.MAX_CHARGE;
+		}
+
+		if (green)
+		{
+			playerStats.playerGreen = playerStats.MAX_CHARGE;
+		}
+
+		if (blue)
+		{
+			playerStats.playerBlue = playerStats.MAX_CHARGE;
+		}
+
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -102,6 +139,7 @@ public class Player : MonoBehaviour
 	{
 		if (transform.position.y <= yLowerLimit)
 		{
+			
 			DamagePlayer (999999);
 		}
 	}
