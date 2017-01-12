@@ -1,6 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/*
+ * 
+ *		TODO:	Enemy collision with player. Proably in Player script.
+ *				Comment Screenshake and AudioSlider scripts
+ * 				Platforms knocking over enemies. Is this a problem?
+ * 
+ */
+
 /*--------------------------------------------------------------------------------------*/
 /*																						*/
 /*	GameMaster: Manages states of the game												*/
@@ -9,37 +17,50 @@ using System.Collections;
 /*			Start ()																	*/
 /*			RespawnPlayer ()															*/
 /*			KillPlayer ()																*/
-/*			TogglePlatforms(int i)														*/														
+/*			HideAll ()																	*/
+/*			TogglePlatforms(int i)														*/	
+/*			TogglePauseScreen(bool showScreen)											*/
+/*			Update ()																	*/
 /*																						*/
 /*--------------------------------------------------------------------------------------*/
 public class GameMaster : MonoBehaviour 
 {
-	//	Static variables
+	//	Public Static variables
 	public static GameMaster gm;				//	Reference to Game Master game object
 
 	//	Public Variables
+	public bool isPaused;						//	Toggles puase screen
 	public bool redIsActive;					//	Tells us if red layer is active
 	public bool greenIsActive;					//	Tells us if green layer is active
 	public bool blueIsActive;					//	Tells us if blue layer is active
+	public float audioLevel;					//	Controls the Audio Level of the game
+	public float shakeIntensity;				//	How violent the camera shake is
+	public float cameraShakeAmount = 0.2f;		//	How much to shake the camera by
+	public float cameraShakeLength = 0.1f;		//	How long the camera shakes for
 	public int spawnDelay = 2;					//	Spawen delay for player
 	public Transform playerPrefab;				//	Reference to player prefab
 	public Transform spawnPoint;				//	Reference to level's spawn point
 	public AudioClip deadAudio;					//	Audio clip for death
+
+	//	Private Static Variables
+	private static GameObject _Player;			//	Reference to player Game Object
+	private static GameObject _RedLayer;		//	Reference to red layer
+	private static GameObject _GreenLayer;		//	Reference to green layer
+	private static GameObject _BlueLayer;		//	Reference to blue layer
 
 	//	Private Variables
 	private Quaternion _RotationHide;			//	Rotate layer to hide it
 	private Quaternion _RotationAppear;			//	Rotate layer to appear
 	private HUD _HUD;							//	Reference to the HUD
 	private HUDTextManager _HUDTextManager;		//	Reference to HUD text manager
-	private  AudioSource _AudioSource;			//	Reference to Audio Source
-	private static GameObject _Player;			//	Reference to player Game Object
-	private static GameObject _RedLayer;		//	Reference to red layer
-	private static GameObject _GreenLayer;		//	Reference to green layer
-	private static GameObject _BlueLayer;		//	Reference to blue layer
+	private AudioSource _AudioSource;			//	Reference to Audio Source
+	private AstarPath _AIManager;				//	Manages collision detction and pathfinding for AI 
+	private CameraShake _MainCamera;			//	Reference to game's camerashake script
+	private GameObject _PauseScreen;			//	Reference to pause screen
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
-	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
+	/*	Start: Runs once at the begining of the game initalizes variables.					*/
 	/*																						*/
 	/*--------------------------------------------------------------------------------------*/
 	void Start ()
@@ -48,18 +69,47 @@ public class GameMaster : MonoBehaviour
 		{
 			gm = GameObject.FindGameObjectWithTag ("GM").GetComponent<GameMaster>();
 		}
+
+		audioLevel = 0.75f;
+
+		//	Game starts paused though
+		isPaused = false;
+
+		//	Initalizes spwan point
 		spawnPoint = GameObject.FindGameObjectWithTag ("Respawn").transform;
+
+		//	values to hide and show the active color
 		_RotationHide = Quaternion.Euler (0, 90, 0);
 		_RotationAppear = Quaternion.Euler (0, 0, 0);
+
+		//	HUD values
 		_HUD = GameObject.FindGameObjectWithTag ("HUD").GetComponent<HUD>();
 		_HUDTextManager = GameObject.FindGameObjectWithTag ("HUDText").GetComponent<HUDTextManager> ();
+
+		//	Audio
 		_AudioSource = GetComponent<AudioSource> ();
+
+		//	To draw updated collision boxes for AI
+		_AIManager = GameObject.FindGameObjectWithTag ("AIManager").GetComponent<AstarPath> ();
+
+		//	Main Camera for screen shake
+		_MainCamera = GetComponent<CameraShake> ();
+
+		//	Player reference
 		_Player = GameObject.FindGameObjectWithTag ("Player");
+
+		//	Reference to layers
 		_RedLayer = GameObject.FindGameObjectWithTag ("Layer_RED");
 		_GreenLayer = GameObject.FindGameObjectWithTag ("Layer_GRN");
 		_BlueLayer = GameObject.FindGameObjectWithTag ("Layer_BLU");
 
+		_PauseScreen = GameObject.FindGameObjectWithTag ("PauseScreen");
+		TogglePauseScreen (false);
+		//	Level starts with no layers active
 		HideAll ();
+
+		//	Updates AI collision boxes
+		_AIManager.Scan ();
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -69,12 +119,13 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public IEnumerator RespawnPlayer()
 	{
-		_AudioSource.PlayOneShot (deadAudio, 1f);
+		_AudioSource.PlayOneShot (deadAudio, 1f * audioLevel);
 		yield return new WaitForSeconds (spawnDelay);
 
 		_Player = (GameObject)Instantiate (PrefabManager.Instance.PlayerPrefab, spawnPoint.position, spawnPoint.rotation);
 		_Player.transform.parent = GameObject.FindGameObjectWithTag ("Player").transform;
 		_HUDTextManager.player = _Player.GetComponent<Player>();
+		_MainCamera.player = _Player.GetComponent<Player> ();
 		GameObject.FindGameObjectWithTag ("MainCamera").GetComponent<CameraFollow2D> ().target = _Player.transform;
 	}
 
@@ -119,6 +170,7 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void TogglePlatforms(int color)
 	{
+		_MainCamera.Shake (cameraShakeAmount * shakeIntensity, cameraShakeLength);
 		HideAll ();
 		switch (color)
 		{
@@ -128,17 +180,14 @@ public class GameMaster : MonoBehaviour
 				//  Rotates HUD sprite to put activated color(RED) on top
 				if(!blueIsActive && !redIsActive && !greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(180);
 				}
 				if (blueIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(180);
 				}
 				if (greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(180);
 				}
 
@@ -159,9 +208,7 @@ public class GameMaster : MonoBehaviour
 				_RedLayer.GetComponent<PolygonCollider2D>().enabled = true;
 
 			}
-
-			//  Displays the number of charge left for RED
-			//playerHUDNumbers.frame = playerR;
+				
 			break;
 		case 1:
 			if(!greenIsActive)
@@ -169,17 +216,14 @@ public class GameMaster : MonoBehaviour
 				//  Rotates HUD sprite to put activated color(RED) on top
 				if(!blueIsActive && !redIsActive && !greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(-60);
 				}
 				if (blueIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(-60);
 				}
 				if (greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(-60);
 				}
 
@@ -199,8 +243,6 @@ public class GameMaster : MonoBehaviour
 				_GreenLayer.GetComponent<PolygonCollider2D>().enabled = true;
 			}
 
-			//  Displays the number of charge left for RED
-			//playerHUDNumbers.frame = playerR;
 			break;
 		case 2:
 			if(!blueIsActive)
@@ -208,17 +250,14 @@ public class GameMaster : MonoBehaviour
 				//  Rotates HUD sprite to put activated color(RED) on top
 				if(!blueIsActive && !redIsActive && !greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(60);
 				}
 				if (blueIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(60);
 				}
 				if (greenIsActive)
 				{
-					//game.add.tween(playerHUD).to({angle: 180}, 150, Phaser.Easing.Linear.None, true);
 					_HUD.RotateHUD(60);
 				}
 
@@ -241,6 +280,40 @@ public class GameMaster : MonoBehaviour
 			break;
 		default:
 			break;
+		}
+
+		_AIManager.Scan ();
+	}
+
+	void TogglePauseScreen(bool showScreen)
+	{
+		_PauseScreen.SetActive (showScreen);
+	}
+
+
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Update: Called once per frame														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
+	void Update ()
+	{
+		if (Input.GetKeyDown(KeyCode.P))
+		{
+			
+			isPaused = !isPaused;
+			TogglePauseScreen (isPaused);
+			if (isPaused)
+			{
+				Time.timeScale = 0;
+
+			}
+			else
+			{
+				Time.timeScale = 1;	
+			}
+
+
 		}
 	}
 }

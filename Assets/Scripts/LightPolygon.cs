@@ -31,6 +31,8 @@ public class LightPolygon : MonoBehaviour
 	public float lightSpeed;											//	How fast the light source moves across the screen
 	public float meshResolution;										//	How many rays are cast out
 	public float edgeDistanceThreshold;									//	Threshold to determine if two edges are seprate objects
+	public float _RightLimit;											//	How far right the light source can go
+	public float _LeftLimit;											//	How far left the lgiht source can go
 	public int edgeResolveIterations;									//	...
 	public LayerMask playerMask;										//	Layer Mask for the player
 	public LayerMask platformMask;										//	Layer Mask for the platforms/ground
@@ -39,8 +41,6 @@ public class LightPolygon : MonoBehaviour
 	public List<Transform> visibleTargets = new List<Transform>();		//	List of objects in the light (currently holds only player)
 
 	//	Private Variables
-	private float _RightLimit;											//	How far right the light source can go
-	private float _LeftLimit;											//	How far left the lgiht source can go
 	private Vector3 _Position;											//	Position of the light source
 	private Mesh _ViewMesh;												//	Reference to the visible mesh
 
@@ -56,9 +56,6 @@ public class LightPolygon : MonoBehaviour
 		viewMeshFilter.mesh = _ViewMesh;
 		StartCoroutine (FindPlayerWithDelay (0.2f));
 		_Position = transform.position;
-
-		_RightLimit = 30;
-		_LeftLimit = -30;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -249,8 +246,15 @@ public class LightPolygon : MonoBehaviour
 				if (!Physics2D.Raycast (transform.position, directionToTarget, distanceToTarget, platformMask)) 
 				{
 					visibleTargets.Add (target);
-					//	TODO: If player Charge else...
-					target.gameObject.GetComponent<Player> ().ChargeUp (true, true, true);
+					if (target.tag == "Player") 
+					{
+						target.gameObject.GetComponent<Player> ().ChargeUp (true, true, true);
+					}
+					if (target.tag == "Enemy_BLCK")
+					{
+						target.GetComponent<BasicEnemyAI> ().inLight = true;
+					}
+
 				}
 			}
 		}
