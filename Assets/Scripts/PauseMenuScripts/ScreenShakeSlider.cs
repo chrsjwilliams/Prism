@@ -2,19 +2,37 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class ScreenShakeSlider : MonoBehaviour {
+/*--------------------------------------------------------------------------------------*/
+/*																						*/
+/*	ScreenShakeSlider: Connects Pause screen slider to game								*/
+/*		Functions:																		*/
+/*			Start ()																	*/
+/*			Update ()																	*/
+/*																						*/
+/*--------------------------------------------------------------------------------------*/
+public class ScreenShakeSlider : MonoBehaviour 
+{
 
-	public Slider screenShakeSlider;
+	public Slider screenShakeSlider;		//	Reference to UI slider
 
-	// Use this for initialization
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Start () 
 	{
 		screenShakeSlider = GetComponent<Slider> ();
 	}
 
-	// Update is called once per frame
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Update: Called once per frame														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Update () 
 	{
 		GameMaster.gm.shakeIntensity = screenShakeSlider.value;
+		GameData.gameData.storedScreenShakeInetnsity = screenShakeSlider.value;
 	}
 }

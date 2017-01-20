@@ -72,7 +72,6 @@ public class Player : MonoBehaviour
 		if (playerStats.Health <= 0)
 		{
 			GameMaster.KillPlayer (this);
-			Debug.Log ("Player is dead");
 		}
 		else
 		{
@@ -98,6 +97,10 @@ public class Player : MonoBehaviour
 			playerStats.playerBlue = playerStats.MAX_CHARGE;
 		}
 
+		GameData.gameData.storedPlayerRedCharge = playerStats.playerRed;
+		GameData.gameData.storedPlayerGreenCharge = playerStats.playerGreen;
+		GameData.gameData.storedPlayerBlueCharge = playerStats.playerBlue;
+
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -108,26 +111,15 @@ public class Player : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void OnCollisionEnter2D(Collision2D collision)
 	{
-		/*
-		BasicEnemy enemy = collision.collider.GetComponent<BasicEnemy> ();
-		if (enemy != null)
+		if (collision.gameObject.tag == "Enemy_CYAN" || collision.gameObject.tag == "Enemy_MGNT"||
+			collision.gameObject.tag ==  "Enemy_YLLW" || collision.gameObject.tag == "Enemy_BLCK")
 		{
-			foreach (ContactPoint2D point in collision.contacts)
-			{
-				if (point.normal.y >= 0.9f)
-				{
-					if (collision.gameObject.tag == "Non-DamageEnemy")
-					{
-						PlayerController.INSTANCE.GetComponent<Rigidbody2D> ().AddForce (new Vector2 (0f, springForce));
-						enemy.DamageEnemy (0);
-					}
-
-				}
-			}
-			if (collision.gameObject.tag != "Non-DamageEnemy")
-				DamagePlayer (1);
+			playerStats.playerRed = 0;
+			playerStats.playerGreen = 0;
+			playerStats.playerBlue = 0;
+			GameMaster.gm.TogglePlatforms (-1);
+			collision.gameObject.GetComponent<BasicEnemyAI> ().followPlayer = false;
 		}
-		*/
 	}
 
 	//*--------------------------------------------------------------------------------------*/

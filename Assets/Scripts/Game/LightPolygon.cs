@@ -341,6 +341,15 @@ public class LightPolygon : MonoBehaviour
 		{
 			lightSpeed *= -1;
 		}
+
+		if (lightSpeed > 0)
+		{
+			GameData.gameData.storedLightDirection = 1;
+		}
+		else
+		{
+			GameData.gameData.storedLightDirection = -1;
+		}
 			
 		transform.position = _Position;
 	}

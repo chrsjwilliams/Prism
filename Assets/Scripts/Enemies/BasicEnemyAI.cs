@@ -2,14 +2,6 @@
 using System.Collections;
 using Pathfinding;
 
-/*
- * 
- *		TODO:	Enemy collision with player. Proably in Player script.  
- * 				Pause Screen
- * 				Platforms knocking over enemies. Is this a problem?
- * 
- */
-
 /*--------------------------------------------------------------------------------------*/
 /*																						*/
 /*	BasicEnemyAI: Controller for basic enemy movements									*/
@@ -57,7 +49,6 @@ public class BasicEnemyAI : MonoBehaviour
 	private Seeker _Seeker;						//	Reference to Seeker component
 	private Rigidbody2D _Rigidbody2D;			//	Reference to out Rigidbody2D component
 	private LightPolygon _LightPolygon;			//	Reference to the light polygon
-	private GameMaster _GM;						//	Reference to Game Master for active colors
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
@@ -97,8 +88,6 @@ public class BasicEnemyAI : MonoBehaviour
 			inLight = true;
 			StartCoroutine (CheckIfInLightPolygon ());
 		}
-
-		_GM = GameObject.FindGameObjectWithTag ("GM").GetComponent<GameMaster>();
 
 		if (target == null)
 		{
@@ -208,17 +197,17 @@ public class BasicEnemyAI : MonoBehaviour
 	void Update()
 	{
 		//	BLACK enemies do not care what color is active
-		if (tag == "Enemy_YLLW" && _GM.blueIsActive)
+		if (tag == "Enemy_YLLW" && GameMaster.gm.blueIsActive)
 		{
 			//	YELLOW enemies do not move when blue is active
 			isOff = true;
 		}
-		else if (tag == "Enemy_CYAN" && _GM.redIsActive)
+		else if (tag == "Enemy_CYAN" && GameMaster.gm.redIsActive)
 		{
 			//	CYAN enemies do not move when red is active
 			isOff = true;
 		}
-		else if (tag == "Enemy_MGNT" && _GM.greenIsActive)
+		else if (tag == "Enemy_MGNT" && GameMaster.gm.greenIsActive)
 		{
 			//	MAGENTA enemies do not move when green is active
 			isOff = true;

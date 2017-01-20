@@ -1,17 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+/*--------------------------------------------------------------------------------------*/
+/*																						*/
+/*	FloatingHUD: Makes image float above I on title screen								*/
+/*		Functions:																		*/
+/*			Start ()																	*/
+/*			Update ()																	*/
+/*																						*/
+/*--------------------------------------------------------------------------------------*/
 public class FloatingHUD : MonoBehaviour 
 {
 	//	Public Variables
-	public float boundary;
-	public float speed;
+	public float boundary;			//	How far the image travels from its origin
+	public float speed;				//	How fast the image moves
 
 	//	Private Variables
-	private float _Top;
-	private float _Bottom;
-	private Vector3 _Position;
+	private float _Top;				//	Refernece to top boundary
+	private float _Bottom;			//	Reference to bottom boundary
+	private Vector3 _Position;		//	temporarily hold image's position
 
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Start () 
 	{
 		_Position = transform.position;
@@ -19,7 +32,11 @@ public class FloatingHUD : MonoBehaviour
 		_Bottom = transform.position.y - boundary;
 	}
 
-	// Update is called once per frame
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Update: Called once per frame														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Update () 
 	{
 		_Position.y+= speed; 

@@ -2,17 +2,24 @@
 using UnityEngine.UI;
 using System.Collections;
 
+/*--------------------------------------------------------------------------------------*/
+/*																						*/
+/*	HUDTextManager: Changes text ouline color and text of HUD							*/
+/*																						*/
+/*		Functions:																		*/
+/*			Start ()																	*/
+/*			Update ()																	*/
+/*																						*/
+/*--------------------------------------------------------------------------------------*/
 public class HUDTextManager : MonoBehaviour
 {
-
-
-	public Player player;
+	//	Public Variables
+	public Player player;				//	Refernece to player
 
 	//	Private Variables
-	private Text _Text;
-	private Color _TextOutlineColor;
-	private Outline _Outline;
-	private GameMaster _GM;
+	private Text _Text;					//	Displays the number of charge
+	private Color _TextOutlineColor;	//	Color of outline of _Text
+	private Outline _Outline;			//	Reference to outline of _Text
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
@@ -25,7 +32,6 @@ public class HUDTextManager : MonoBehaviour
 		_TextOutlineColor = new Color (0f, 0f, 0f, 0.75f);
 		_Outline = GetComponent<Outline> ();
 		player = GameObject.FindGameObjectWithTag ("Player").GetComponent<Player> ();
-		_GM = GameObject.FindGameObjectWithTag ("GM").GetComponent<GameMaster>();
 
 		_Outline.effectColor = _TextOutlineColor;
 	}
@@ -44,22 +50,22 @@ public class HUDTextManager : MonoBehaviour
 			_TextOutlineColor = new Color (0.8f, 0.8f, 0.8f, 0.75f);
 			_Text.text = "3";
 		} 
-		else if (_GM.redIsActive)
+		else if (GameMaster.gm.redIsActive)
 		{
 			_TextOutlineColor = new Color (0.8f, 0f, 0f, 0.9f);
 			_Text.text = player.playerStats.playerRed.ToString();
 		}
-		else if (_GM.greenIsActive)
+		else if (GameMaster.gm.greenIsActive)
 		{
 			_TextOutlineColor = new Color (0f, 0.8f, 0f, 0.9f);
 			_Text.text = player.playerStats.playerGreen.ToString();
 		}
-		else if (_GM.blueIsActive)
+		else if (GameMaster.gm.blueIsActive)
 		{
 			_TextOutlineColor = new Color (0f, 0f, 0.8f, 0.9f);
 			_Text.text = player.playerStats.playerBlue.ToString();
 		}
-		else if (!_GM.redIsActive && !_GM.greenIsActive && !_GM.blueIsActive)
+		else if (!GameMaster.gm.redIsActive && !GameMaster.gm.greenIsActive && !GameMaster.gm.blueIsActive)
 		{
 			_TextOutlineColor = new Color (0f, 0f, 0f, 0.75f);
 

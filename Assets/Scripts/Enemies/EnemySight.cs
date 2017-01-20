@@ -7,6 +7,8 @@ using System.Collections;
 /*																						*/
 /*		Functions:																		*/
 /*			Start()																		*/
+/*			OnTriggerEnter2D (Collider2D other)											*/
+/*			OnTriggerExit2D (Collider2D other)											*/
 /*																						*/
 /*--------------------------------------------------------------------------------------*/
 public class EnemySight : MonoBehaviour 
@@ -24,6 +26,12 @@ public class EnemySight : MonoBehaviour
 		enemy = GetComponentInChildren<BasicEnemyAI> ();
 	}
 
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	OnTriggerEnter2D:																	*/
+	/*		param: Collider2D other - 														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void OnTriggerEnter2D(Collider2D other)
 	{
 		if (other.gameObject.tag == "Player" && !enemy.isOff)
@@ -32,6 +40,12 @@ public class EnemySight : MonoBehaviour
 		}
 	}
 
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	OnTriggerExit2D:																	*/
+	/*		param: Collider2D other - 														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void OnTriggerExit2D(Collider2D other)
 	{
 		if (other.gameObject.tag == "Player")

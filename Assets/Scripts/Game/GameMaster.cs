@@ -3,9 +3,9 @@ using System.Collections;
 
 /*
  * 
- *		TODO:	Enemy collision with player. Proably in Player script.
- *				Comment Screenshake and AudioSlider scripts
- * 				Platforms knocking over enemies. Is this a problem?
+ *		TODO:	Enemy collision with player. Particle Effects
+ *				Loading Screen between levels. maybe between Main menu and game? (probably not)
+ * 			
  * 
  */
 
@@ -71,6 +71,10 @@ public class GameMaster : MonoBehaviour
 		}
 
 		audioLevel = 0.75f;
+		shakeIntensity = 0.75f;
+
+		GameData.gameData.storedAudioLevel = audioLevel;
+		GameData.gameData.storedScreenShakeInetnsity = shakeIntensity;
 
 		//	Game starts paused though
 		isPaused = false;
@@ -126,7 +130,7 @@ public class GameMaster : MonoBehaviour
 		_Player.transform.parent = GameObject.FindGameObjectWithTag ("Player").transform;
 		_HUDTextManager.player = _Player.GetComponent<Player>();
 		_MainCamera.player = _Player.GetComponent<Player> ();
-		GameObject.FindGameObjectWithTag ("MainCamera").GetComponent<CameraFollow2D> ().target = _Player.transform;
+		GameObject.FindGameObjectWithTag ("CameraShake").GetComponent<CameraFollow2D> ().target = _Player.transform;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -170,6 +174,7 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void TogglePlatforms(int color)
 	{
+		GameData.gameData.storedActiveColor = color;
 		_MainCamera.Shake (cameraShakeAmount * shakeIntensity, cameraShakeLength);
 		HideAll ();
 		switch (color)

@@ -3,24 +3,39 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
+/*--------------------------------------------------------------------------------------*/
+/*																						*/
+/*	Cursor: The indicator for the title screen											*/
+/*		Functions:																		*/
+/*			Start ()																	*/
+/*			Update ()																	*/
+/*																						*/
+/*--------------------------------------------------------------------------------------*/
 public class Cursor : MonoBehaviour 
 {
+	private float _LowerPos;		//	Lower position for the marker
+	private float _HigherPos;		//	Higher position for the marker
+	private Vector3 _Position;		//	Temporarily hold the cursors position
+	private Image _Cursor;			//	Image of the cursor. Used to get image's height
 
-	private float _LowerPos;
-	private float _HigherPos;
-	private Vector3 _Position;
-	private Image _Cursor;
-	// Use this for initialization
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Start () 
 	{
 		_Position = transform.position;
 		_Cursor = GetComponent<Image> ();
-		//	_Cursor.sprite.rect.height
 		_LowerPos = _Position.y - (_Cursor.sprite.rect.height * 2);
 		_HigherPos = _Position.y;
 	}
 	
-	// Update is called once per frame
+	/*--------------------------------------------------------------------------------------*/
+	/*																						*/
+	/*	Update: Called once per frame														*/
+	/*																						*/
+	/*--------------------------------------------------------------------------------------*/
 	void Update () 
 	{
 		if (Input.GetKeyDown(KeyCode.DownArrow))
@@ -42,8 +57,7 @@ public class Cursor : MonoBehaviour
 		{
 			SceneManager.LoadScene ("ControlsMenu", LoadSceneMode.Single);
 		}
-
-		Debug.Log (_Position);
+			
 		transform.position = _Position;
 	}
 }

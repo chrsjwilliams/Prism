@@ -19,7 +19,6 @@ public class HUD : MonoBehaviour
 	private float _speed;					//	Speed of the rotation
 	private Quaternion _RotationAngle;		//	Stores the approiate rotation
 	private AudioSource _PrismSong;			//	Audio Source that plays the song
-	private GameMaster _GM;					//	Reference to GameMaster object
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
@@ -28,7 +27,6 @@ public class HUD : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void Start () 
 	{
-		_GM = GameObject.FindGameObjectWithTag ("GM").GetComponent<GameMaster>();
 		_PrismSong = GetComponentInParent<AudioSource> ();
 		_speed = 3f;
 		_RotationAngle = Quaternion.Euler (0, 0, 0);
@@ -54,24 +52,24 @@ public class HUD : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void Update () 
 	{
-		_PrismSong.volume = 1 * _GM.audioLevel;
+		_PrismSong.volume = 1 * GameMaster.gm.audioLevel;
 		
-		if (_GM.redIsActive) 
+		if (GameMaster.gm.redIsActive) 
 		{
 			transform.rotation = Quaternion.Slerp (transform.rotation, _RotationAngle, Time.deltaTime * _speed);
 		}
 
-		if (_GM.greenIsActive)
+		if (GameMaster.gm.greenIsActive)
 		{
 			transform.rotation = Quaternion.Slerp (transform.rotation, _RotationAngle, Time.deltaTime * _speed);
 		}
 
-		if (_GM.blueIsActive)
+		if (GameMaster.gm.blueIsActive)
 		{
 			transform.rotation = Quaternion.Slerp (transform.rotation, _RotationAngle, Time.deltaTime * _speed);
 		}
 
-		if (!_GM.redIsActive && !_GM.greenIsActive && !_GM.blueIsActive)
+		if (!GameMaster.gm.redIsActive && !GameMaster.gm.greenIsActive && !GameMaster.gm.blueIsActive)
 		{
 			_RotationAngle = Quaternion.Euler (0, 0, 0);
 			transform.rotation = Quaternion.Slerp (transform.rotation, _RotationAngle, Time.deltaTime * _speed);

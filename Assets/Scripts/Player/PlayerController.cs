@@ -6,7 +6,6 @@ using System.Collections;
 /*	PlayerController: Handles all movement and manages all states of the player			*/
 /*		Functions:																		*/
 /*			Awake ()																	*/
-/*			Start ()																	*/
 /*			Move (float move, bool jump)												*/
 /*			Flip ()																		*/
 /*			FlinchTimer (float flinchTimer)												*/
@@ -56,7 +55,7 @@ public class PlayerController : MonoBehaviour
 	/*																						*/
 	/*	Awake: Runs once when the object is created											*/
 	/*																						*/
-	///*--------------------------------------------------------------------------------------*/
+	/*--------------------------------------------------------------------------------------*/
 	private void Awake()
 	{
 		INSTANCE = this;
@@ -68,16 +67,6 @@ public class PlayerController : MonoBehaviour
 		_AudioSource = GetComponent<AudioSource> ();
 		_PlayLandedAudio = true;
 	}
-
-	/*--------------------------------------------------------------------------------------*/
-	/*																						*/
-	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
-	/*																						*/
-	///*--------------------------------------------------------------------------------------*/	
-	void Start () 
-	{
-	
-	}
 		
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
@@ -85,7 +74,7 @@ public class PlayerController : MonoBehaviour
 	/*		param: float move - power of player movement									*/
 	/*			   bool jump - checks if we should jump										*/
 	/*																						*/
-	///*--------------------------------------------------------------------------------------*/
+	/*--------------------------------------------------------------------------------------*/
 	public void Move(float move, bool jump)
 	{
 		// Only control player if grounded or if airControl is on

@@ -1,12 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-/*
- * 
- * 		TODO: 
- * 
- */ 
-
 /*--------------------------------------------------------------------------------------*/
 /*																						*/
 /*	PlayerControls: Handles user input for player										*/
@@ -26,23 +20,21 @@ public class PlayerControls : MonoBehaviour
 
 	//	Private Variables
 	private bool _Jump;							//	Lets us know if we are jumping
+	private Color _TempColor;					//	Stores temporary color
 	private AudioSource _AudioSource;			//	Reference to Audio Source
+	private ParticleSystem _ParticleSystem;		//	Reference to Particle System
 	private Player _Player;						//	Reference to player
-	private GameMaster _GM;						//	Reference to Game Master
 
 	/*--------------------------------------------------------------------------------------*/
 	/*																						*/
 	/*	Start: Runs once at the begining of the game. Initalizes variables.					*/
 	/*																						*/
-	///*--------------------------------------------------------------------------------------*/
+	/*--------------------------------------------------------------------------------------*/
 	private void Start()
-	{
+	{		
 		_Player = GetComponent<Player> ();
-		if (_GM == null)
-		{
-			_GM = GameObject.FindGameObjectWithTag ("GM").GetComponent<GameMaster>();
-		}
-
+		_ParticleSystem = GetComponent<ParticleSystem> ();
+		_ParticleSystem.GetComponent<Renderer>().sortingLayerName = "Particles";
 		_AudioSource = GetComponent<AudioSource> ();
 	}
 
@@ -78,19 +70,24 @@ public class PlayerControls : MonoBehaviour
 			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
 			{
 				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				_GM.TogglePlatforms (-1);
+				GameMaster.gm.TogglePlatforms (-1);
 			}
 			else
 			{
-				if (!_GM.redIsActive && _Player.playerStats.playerRed > 0) 
+				if (!GameMaster.gm.redIsActive && _Player.playerStats.playerRed > 0) 
 				{
+					_ParticleSystem.Play ();
+					_TempColor = new Color (0.95f, 0.38f, 0.18f, 1.0f);
+					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
 					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					_GM.TogglePlatforms (0);
+					GameMaster.gm.TogglePlatforms (0);
 					_Player.playerStats.playerRed--;
+
 					if (_Player.playerStats.playerRed < 0) 
 					{
 						_Player.playerStats.playerRed = 0;
 					}
+					GameData.gameData.storedPlayerRedCharge = _Player.playerStats.playerRed;
 				}
 			}
 		}
@@ -99,19 +96,24 @@ public class PlayerControls : MonoBehaviour
 			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
 			{
 				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				_GM.TogglePlatforms (-1);
+				GameMaster.gm.TogglePlatforms (-1);
 			}
 			else
 			{
-				if (!_GM.greenIsActive && _Player.playerStats.playerGreen > 0) 
+				if (!GameMaster.gm.greenIsActive && _Player.playerStats.playerGreen > 0) 
 				{
+					_ParticleSystem.Play ();
+					_TempColor = new Color (0.43f, 0.89f, 0.45f, 1.0f);
+					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
 					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					_GM.TogglePlatforms (1);
+					GameMaster.gm.TogglePlatforms (1);
 					_Player.playerStats.playerGreen--;
+
 					if (_Player.playerStats.playerGreen < 0) 
 					{
 						_Player.playerStats.playerGreen = 0;
 					}
+					GameData.gameData.storedPlayerGreenCharge = _Player.playerStats.playerGreen;
 				}
 			}
 		}
@@ -120,19 +122,24 @@ public class PlayerControls : MonoBehaviour
 			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
 			{
 				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				_GM.TogglePlatforms (-1);
+				GameMaster.gm.TogglePlatforms (-1);
 			}
 			else
 			{
-				if (!_GM.blueIsActive && _Player.playerStats.playerBlue > 0) 
+				if (!GameMaster.gm.blueIsActive && _Player.playerStats.playerBlue > 0) 
 				{
+					_ParticleSystem.Play ();
+					_TempColor = new Color (0.17f, 0.54f, 0.88f, 1.0f);
+					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
 					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					_GM.TogglePlatforms (2);
+					GameMaster.gm.TogglePlatforms (2);
 					_Player.playerStats.playerBlue--;
+
 					if (_Player.playerStats.playerBlue < 0)
 					{
 						_Player.playerStats.playerBlue = 0;
 					}
+					GameData.gameData.storedPlayerBlueCharge = _Player.playerStats.playerBlue;
 				}
 			}
 		}
