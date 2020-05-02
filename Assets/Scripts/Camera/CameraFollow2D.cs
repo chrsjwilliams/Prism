@@ -19,8 +19,9 @@ public class CameraFollow2D : MonoBehaviour
 	public float lookAheadFactor = 3.0f;			//	how far ahead the camera can be
 	public float lookAheadReturnSpeed = 0.5f;		//	How fast the camera snaps back to the target
 	public float lookAheadMoveThreshold = 0.1f;		//	How far ahead the camera goes ahead of the target
-	public float yPosBoundary = -5.0f;				//	The lowest the camera can go in the y direction
-	public float xPosBoundary = 353.5f;				//	The furthest the camera can go in the x direction
+	public float yPosBoundary = 9.0f;				//	The highest the camera can go in the y direction
+	public float yNegBoundary = -5.0f;				//	The lowest the camera can go in the y direction
+	public float xPosBoundary = 50.0f;				//	The furthest the camera can go in the x direction
 	public float xNegBoundary = 0.0f;				//	The lowest the camera can go in the x direction
 	public float nextTimeToSearch = 0;				//	How long unitl the camera searches for the target again
 
@@ -88,7 +89,7 @@ public class CameraFollow2D : MonoBehaviour
 		Vector3 aheadTargetPos = target.position + m_LookAheadPos + Vector3.forward * m_OffsetZ;
 		Vector3 newPos = Vector3.SmoothDamp (transform.position, aheadTargetPos, ref m_CurrentVelocity, damping);
 
-		newPos = new Vector3 (newPos.x, Mathf.Clamp (newPos.y, yPosBoundary, Mathf.Infinity), newPos.z);
+		newPos = new Vector3 (newPos.x, newPos.y, newPos.z);
 
 		if (newPos.x > xPosBoundary) 
 		{
@@ -98,6 +99,16 @@ public class CameraFollow2D : MonoBehaviour
 		if (newPos.x < xNegBoundary) 
 		{
 			newPos.x = xNegBoundary;
+		}
+
+		if (newPos.y < yNegBoundary) 
+		{
+			newPos.y = yNegBoundary;
+		}
+
+		if (newPos.y > yPosBoundary) 
+		{
+			newPos.y = yPosBoundary;
 		}
 
 		transform.position = newPos;

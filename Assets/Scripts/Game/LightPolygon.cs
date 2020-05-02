@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -246,11 +247,11 @@ public class LightPolygon : MonoBehaviour
 				if (!Physics2D.Raycast (transform.position, directionToTarget, distanceToTarget, platformMask)) 
 				{
 					visibleTargets.Add (target);
-					if (target.tag == "Player") 
+					if (target.tag == "Player" && !GameMaster.playerIsDead) 
 					{
 						target.gameObject.GetComponent<Player> ().ChargeUp (true, true, true);
 					}
-					if (target.tag == "Enemy_BLCK")
+					if (target.tag == "Enemy_BLCK" && SceneManager.GetActiveScene ().name != "ControlsMenu")
 					{
 						target.GetComponent<BasicEnemyAI> ().inLight = true;
 					}
@@ -334,24 +335,27 @@ public class LightPolygon : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void Update()
 	{
-		//	Lightsource
-		_Position.x+= lightSpeed; 
+		if (!NextLevel.loadingLevel.isLoading || SceneManager.GetActiveScene ().name == "ControlsMenu") 
+		{
+			//	Lightsource
+			_Position.x += lightSpeed; 
 
-		if (_Position.x > _RightLimit || _Position.x < _LeftLimit)
-		{
-			lightSpeed *= -1;
-		}
+			if (_Position.x > _RightLimit || _Position.x < _LeftLimit) 
+			{
+				lightSpeed *= -1;
+			}
 
-		if (lightSpeed > 0)
-		{
-			GameData.gameData.storedLightDirection = 1;
-		}
-		else
-		{
-			GameData.gameData.storedLightDirection = -1;
-		}
+			if (SceneManager.GetActiveScene ().name != "ControlsMenu") 
+			{
+				if (lightSpeed > 0) {
+					GameData.gameData.storedLightDirection = 1;
+				} else {
+					GameData.gameData.storedLightDirection = -1;
+				}
+			}
+				transform.position = _Position;
 			
-		transform.position = _Position;
+		}
 	}
 
 	/*--------------------------------------------------------------------------------------*/

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 /*
@@ -27,6 +28,7 @@ public class GameMaster : MonoBehaviour
 {
 	//	Public Static variables
 	public static GameMaster gm;				//	Reference to Game Master game object
+	public static bool playerIsDead;			//	Stops Charged Up Script if player is dead
 
 	//	Public Variables
 	public bool isPaused;						//	Toggles puase screen
@@ -49,8 +51,8 @@ public class GameMaster : MonoBehaviour
 	private static GameObject _BlueLayer;		//	Reference to blue layer
 
 	//	Private Variables
-	private Quaternion _RotationHide;			//	Rotate layer to hide it
-	private Quaternion _RotationAppear;			//	Rotate layer to appear
+	private Vector3 _RotationHide;				//	Rotate layer to hide it
+	private Vector3 _RotationAppear;			//	Rotate layer to appear
 	private HUD _HUD;							//	Reference to the HUD
 	private HUDTextManager _HUDTextManager;		//	Reference to HUD text manager
 	private AudioSource _AudioSource;			//	Reference to Audio Source
@@ -73,9 +75,11 @@ public class GameMaster : MonoBehaviour
 		audioLevel = 0.75f;
 		shakeIntensity = 0.75f;
 
-		GameData.gameData.storedAudioLevel = audioLevel;
-		GameData.gameData.storedScreenShakeInetnsity = shakeIntensity;
-
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu")
+		{
+			GameData.gameData.storedAudioLevel = audioLevel;
+			GameData.gameData.storedScreenShakeInetnsity = shakeIntensity;
+		}
 		//	Game starts paused though
 		isPaused = false;
 
@@ -83,8 +87,8 @@ public class GameMaster : MonoBehaviour
 		spawnPoint = GameObject.FindGameObjectWithTag ("Respawn").transform;
 
 		//	values to hide and show the active color
-		_RotationHide = Quaternion.Euler (0, 90, 0);
-		_RotationAppear = Quaternion.Euler (0, 0, 0);
+		_RotationHide = new Vector3 (0, 0, 0);
+		_RotationAppear = new Vector3 (1, 1, 1);
 
 		//	HUD values
 		_HUD = GameObject.FindGameObjectWithTag ("HUD").GetComponent<HUD>();
@@ -93,9 +97,11 @@ public class GameMaster : MonoBehaviour
 		//	Audio
 		_AudioSource = GetComponent<AudioSource> ();
 
-		//	To draw updated collision boxes for AI
-		_AIManager = GameObject.FindGameObjectWithTag ("AIManager").GetComponent<AstarPath> ();
-
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu") 
+		{
+			//	To draw updated collision boxes for AI
+			_AIManager = GameObject.FindGameObjectWithTag ("AIManager").GetComponent<AstarPath> ();
+		}
 		//	Main Camera for screen shake
 		_MainCamera = GetComponent<CameraShake> ();
 
@@ -112,8 +118,12 @@ public class GameMaster : MonoBehaviour
 		//	Level starts with no layers active
 		HideAll ();
 
-		//	Updates AI collision boxes
-		_AIManager.Scan ();
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu")
+		{
+			//	Updates AI collision boxes
+			_AIManager.Scan ();
+		}
+		playerIsDead = false;
 	}
 
 	/*--------------------------------------------------------------------------------------*/
@@ -128,6 +138,7 @@ public class GameMaster : MonoBehaviour
 
 		_Player = (GameObject)Instantiate (PrefabManager.Instance.PlayerPrefab, spawnPoint.position, spawnPoint.rotation);
 		_Player.transform.parent = GameObject.FindGameObjectWithTag ("Player").transform;
+		playerIsDead = false;
 		_HUDTextManager.player = _Player.GetComponent<Player>();
 		_MainCamera.player = _Player.GetComponent<Player> ();
 		GameObject.FindGameObjectWithTag ("CameraShake").GetComponent<CameraFollow2D> ().target = _Player.transform;
@@ -141,6 +152,7 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public static void KillPlayer (Player player)
 	{
+		playerIsDead = true;
 		_Player = player.gameObject;
 		Destroy (player.gameObject);
 		gm.StartCoroutine(gm.RespawnPlayer());
@@ -157,9 +169,9 @@ public class GameMaster : MonoBehaviour
 		greenIsActive = false;
 		blueIsActive = false;
 
-		_RedLayer.transform.rotation = _RotationHide;
-		_GreenLayer.transform.rotation = _RotationHide;
-		_BlueLayer.transform.rotation = _RotationHide;
+		_RedLayer.transform.localScale = _RotationHide;
+		_GreenLayer.transform.localScale = _RotationHide;
+		_BlueLayer.transform.localScale = _RotationHide;
 
 		_RedLayer.GetComponent<PolygonCollider2D>().enabled = false;
 		_GreenLayer.GetComponent<PolygonCollider2D>().enabled = false;
@@ -174,7 +186,11 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	public void TogglePlatforms(int color)
 	{
-		GameData.gameData.storedActiveColor = color;
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu")
+		{
+			GameData.gameData.storedActiveColor = color;
+		}
+
 		_MainCamera.Shake (cameraShakeAmount * shakeIntensity, cameraShakeLength);
 		HideAll ();
 		switch (color)
@@ -204,7 +220,7 @@ public class GameMaster : MonoBehaviour
 				redIsActive = true;
 			
 				//  Displays Only RED and GRAY platforms
-				_RedLayer.transform.rotation = _RotationAppear;
+				_RedLayer.transform.localScale = _RotationAppear;
 
 				//  Plays toggle sound effect
 				//toggleFX.play("", 0, .5,false, false);
@@ -239,7 +255,7 @@ public class GameMaster : MonoBehaviour
 				//  Sets GREEN color to active
 				greenIsActive = true;
 				//  Displays Only GREEN and GRAY platforms
-				_GreenLayer.transform.rotation = _RotationAppear;
+				_GreenLayer.transform.localScale = _RotationAppear;
 
 				//  Plays toggle sound effect
 				//toggleFX.play("", 0, .5,false, false);
@@ -273,7 +289,7 @@ public class GameMaster : MonoBehaviour
 				//  Sets BLUE color to active
 				blueIsActive = true;
 				//  Displays Only BLUE and GRAY platforms
-				_BlueLayer.transform.rotation = _RotationAppear;
+				_BlueLayer.transform.localScale = _RotationAppear;
 
 				//  Plays toggle sound effect
 				//toggleFX.play("", 0, .5,false, false);
@@ -287,12 +303,19 @@ public class GameMaster : MonoBehaviour
 			break;
 		}
 
-		_AIManager.Scan ();
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu")
+		{
+			//	Updates AI collision boxes
+			_AIManager.Scan ();
+		}
 	}
 
 	void TogglePauseScreen(bool showScreen)
 	{
-		_PauseScreen.SetActive (showScreen);
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu") 
+		{
+			_PauseScreen.SetActive (showScreen);
+		}
 	}
 
 
@@ -303,7 +326,7 @@ public class GameMaster : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void Update ()
 	{
-		if (Input.GetKeyDown(KeyCode.P))
+		if (Input.GetKeyDown(KeyCode.P) && SceneManager.GetActiveScene ().name != "ControlsMenu")
 		{
 			
 			isPaused = !isPaused;

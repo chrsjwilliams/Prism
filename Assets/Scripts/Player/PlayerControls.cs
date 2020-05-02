@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 /*--------------------------------------------------------------------------------------*/
@@ -59,94 +60,97 @@ public class PlayerControls : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	private void Update ()
 	{
-		if (!_Jump)
+		if (!NextLevel.loadingLevel.isLoading || SceneManager.GetActiveScene ().name == "ControlsMenu") 
 		{
-			// Read the jump input in Update so button presses aren't missed
-			_Jump = Input.GetKeyDown(KeyCode.Space);
-		}
-
-		if (Input.GetKeyDown(KeyCode.R))
-		{
-			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
+			if (!_Jump)
 			{
-				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				GameMaster.gm.TogglePlatforms (-1);
+				// Read the jump input in Update so button presses aren't missed
+				_Jump = Input.GetKeyDown (KeyCode.Space);
 			}
-			else
-			{
-				if (!GameMaster.gm.redIsActive && _Player.playerStats.playerRed > 0) 
-				{
-					_ParticleSystem.Play ();
-					_TempColor = new Color (0.95f, 0.38f, 0.18f, 1.0f);
-					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
-					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					GameMaster.gm.TogglePlatforms (0);
-					_Player.playerStats.playerRed--;
 
-					if (_Player.playerStats.playerRed < 0) 
+			if (Input.GetKeyDown (KeyCode.R)) 
+			{
+				if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
+				{
+					_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
+					GameMaster.gm.TogglePlatforms (-1);
+				} 
+				else
+				{
+					if (!GameMaster.gm.redIsActive && _Player.playerStats.playerRed > 0)
 					{
-						_Player.playerStats.playerRed = 0;
+						_ParticleSystem.Play ();
+						_TempColor = new Color (0.95f, 0.38f, 0.18f, 1.0f);
+						_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
+						_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
+						GameMaster.gm.TogglePlatforms (0);
+						_Player.playerStats.playerRed--;
+
+						if (_Player.playerStats.playerRed < 0)
+						{
+							_Player.playerStats.playerRed = 0;
+						}
+						GameData.gameData.storedPlayerRedCharge = _Player.playerStats.playerRed;
 					}
-					GameData.gameData.storedPlayerRedCharge = _Player.playerStats.playerRed;
 				}
 			}
-		}
-		else if (Input.GetKeyDown(KeyCode.G))
-		{
-			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
+			else if (Input.GetKeyDown (KeyCode.G)) 
 			{
-				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				GameMaster.gm.TogglePlatforms (-1);
-			}
-			else
-			{
-				if (!GameMaster.gm.greenIsActive && _Player.playerStats.playerGreen > 0) 
+				if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0) 
 				{
-					_ParticleSystem.Play ();
-					_TempColor = new Color (0.43f, 0.89f, 0.45f, 1.0f);
-					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
-					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					GameMaster.gm.TogglePlatforms (1);
-					_Player.playerStats.playerGreen--;
-
-					if (_Player.playerStats.playerGreen < 0) 
+					_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
+					GameMaster.gm.TogglePlatforms (-1);
+				}
+				else
+				{
+					if (!GameMaster.gm.greenIsActive && _Player.playerStats.playerGreen > 0)
 					{
-						_Player.playerStats.playerGreen = 0;
+						_ParticleSystem.Play ();
+						_TempColor = new Color (0.43f, 0.89f, 0.45f, 1.0f);
+						_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
+						_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
+						GameMaster.gm.TogglePlatforms (1);
+						_Player.playerStats.playerGreen--;
+
+						if (_Player.playerStats.playerGreen < 0)
+						{
+							_Player.playerStats.playerGreen = 0;
+						}
+						GameData.gameData.storedPlayerGreenCharge = _Player.playerStats.playerGreen;
 					}
-					GameData.gameData.storedPlayerGreenCharge = _Player.playerStats.playerGreen;
+				}
+			} 
+			else if (Input.GetKeyDown (KeyCode.B)) 
+			{
+				if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0) 
+				{
+					_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
+					GameMaster.gm.TogglePlatforms (-1);
+				}
+				else 
+				{
+					if (!GameMaster.gm.blueIsActive && _Player.playerStats.playerBlue > 0)
+					{
+						_ParticleSystem.Play ();
+						_TempColor = new Color (0.17f, 0.54f, 0.88f, 1.0f);
+						_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
+						_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
+						GameMaster.gm.TogglePlatforms (2);
+						_Player.playerStats.playerBlue--;
+
+						if (_Player.playerStats.playerBlue < 0) 
+						{
+							_Player.playerStats.playerBlue = 0;
+						}
+						GameData.gameData.storedPlayerBlueCharge = _Player.playerStats.playerBlue;
+					}
 				}
 			}
-		}
-		else if (Input.GetKeyDown(KeyCode.B))
-		{
-			if (_Player.playerStats.playerRed == 0 && _Player.playerStats.playerGreen == 0 && _Player.playerStats.playerBlue == 0)
-			{
-				_AudioSource.PlayOneShot (noChargeAudio, 0.5f * GameMaster.gm.audioLevel);
-				GameMaster.gm.TogglePlatforms (-1);
-			}
-			else
-			{
-				if (!GameMaster.gm.blueIsActive && _Player.playerStats.playerBlue > 0) 
-				{
-					_ParticleSystem.Play ();
-					_TempColor = new Color (0.17f, 0.54f, 0.88f, 1.0f);
-					_ParticleSystem.subEmitters.birth0.startColor = _TempColor;
-					_AudioSource.PlayOneShot (togglePlatformAudio, 0.5f * GameMaster.gm.audioLevel);
-					GameMaster.gm.TogglePlatforms (2);
-					_Player.playerStats.playerBlue--;
 
-					if (_Player.playerStats.playerBlue < 0)
-					{
-						_Player.playerStats.playerBlue = 0;
-					}
-					GameData.gameData.storedPlayerBlueCharge = _Player.playerStats.playerBlue;
-				}
+			if (PlayerController.INSTANCE.isGrounded ())
+			{
+				PlayerController.INSTANCE.setAirControl (true);
 			}
-		}
-
-		if (PlayerController.INSTANCE.isGrounded ()) 
-		{
-			PlayerController.INSTANCE.setAirControl (true);
 		}
 	}
 }

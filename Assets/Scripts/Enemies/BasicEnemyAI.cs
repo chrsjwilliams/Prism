@@ -123,7 +123,7 @@ public class BasicEnemyAI : MonoBehaviour
 			_SerahcingForPlayer = false;
 			target = searchResult.transform;
 			StartCoroutine (UpdatePath ());
-			return false;
+			yield return new WaitForSeconds (0f);
 		}
 	}
 
@@ -161,7 +161,7 @@ public class BasicEnemyAI : MonoBehaviour
 				_SerahcingForPlayer = true;
 				StartCoroutine (SearchForPlayer());
 			}
-			return false;
+			yield return new WaitForSeconds (0f);
 		}
 
 		//	Starts a new path to the target position, returns result to OnPathComplete method
@@ -225,99 +225,102 @@ public class BasicEnemyAI : MonoBehaviour
 	/*--------------------------------------------------------------------------------------*/
 	void FixedUpdate () 
 	{
-		if (target == null)
+		if (!NextLevel.loadingLevel.isLoading)
 		{
-			if (!_SerahcingForPlayer)
+			if (target == null)
 			{
-				_SerahcingForPlayer = true;
-				StartCoroutine (SearchForPlayer());
+				if (!_SerahcingForPlayer)
+				{
+					_SerahcingForPlayer = true;
+					StartCoroutine (SearchForPlayer ());
+				}
+				return;
 			}
-			return;
-		}
 
-		if (path == null)
-		{
-			return;
-		}
-
-		if (_CurrentWayPoint >= path.vectorPath.Count)
-		{
-			if (pathIsEnded)
+			if (path == null)
 			{
 				return;
 			}
-				
-			pathIsEnded = true;
-			return;
-		}
 
-		pathIsEnded = false;
-
-		//	Only move when active
-		if (!isOff) 
-		{
-			//	Movement when player is in sight or when not in the light
-			if ((tag != "Enemy_BLCK" || !inLight) && followPlayer) 
+			if (_CurrentWayPoint >= path.vectorPath.Count) 
 			{
-				//	Finds direction to next way point
-				Vector3 direction = (path.vectorPath [_CurrentWayPoint] - transform.position).normalized;
-				direction *= speed * Time.fixedDeltaTime;
-
-				//	Moves the AI
-
-				_Rigidbody2D.AddForce (direction, fMode);
-
-				float distance = Vector3.Distance (transform.position, path.vectorPath [_CurrentWayPoint]);
-
-				if (distance < nextWayPointDistance) 
+				if (pathIsEnded) 
 				{
-					_CurrentWayPoint++;
 					return;
 				}
+				
+				pathIsEnded = true;
+				return;
 			}
 
-			//	Movement for YELLOW enemies (left and right)
-			if (!followPlayer && tag == "Enemy_YLLW") 
+			pathIsEnded = false;
+
+			//	Only move when active
+			if (!isOff)
 			{
-				Vector2 lineCastPosition = transform.position.toVector2 () - transform.right.toVector2 () * _Width + Vector2.up * _Height;
-
-				bool isGrounded = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.down, enemyMask);
-				bool isBlocked = Physics2D.Linecast (lineCastPosition, lineCastPosition - transform.right.toVector2 () * 0.05f, enemyMask);
-
-				//	If not grounded or blocked then turn around
-				if (!isGrounded || isBlocked) 
+				//	Movement when player is in sight or when not in the light
+				if ((tag != "Enemy_BLCK" || !inLight) && followPlayer)
 				{
-					Vector3 currentRotation = transform.eulerAngles;
-					currentRotation.y += 180;
-					transform.eulerAngles = currentRotation;
+					//	Finds direction to next way point
+					Vector3 direction = (path.vectorPath [_CurrentWayPoint] - transform.position).normalized;
+					direction *= speed * Time.fixedDeltaTime;
+
+					//	Moves the AI
+
+					_Rigidbody2D.AddForce (direction, fMode);
+
+					float distance = Vector3.Distance (transform.position, path.vectorPath [_CurrentWayPoint]);
+
+					if (distance < nextWayPointDistance) 
+					{
+						_CurrentWayPoint++;
+						return;
+					}
 				}
 
-				//	Always move "forward" when not following player
-				Vector2 newVelcotiy = _Rigidbody2D.velocity;
-				newVelcotiy.x = -transform.right.x * moveSpeed * Time.fixedDeltaTime;
-
-				_Rigidbody2D.velocity = newVelcotiy;
-			}
-
-			//	Movement for CYAN enemies (up and down)
-			if (!followPlayer && tag == "Enemy_CYAN") 
-			{
-				Vector2 lineCastPosition = transform.position.toVector2 () - transform.right.toVector2 () * 0.0f * _Width + Vector2.up * _Height;
-
-				bool isBlockedBottom = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.down * 0.9f, enemyMask);
-				bool isBlockedTop = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.up * 0.05f, enemyMask);
-
-				//	If not grounded or bloacked then turn around
-				if (isBlockedBottom || isBlockedTop) 
+				//	Movement for YELLOW enemies (left and right)
+				if (!followPlayer && tag == "Enemy_YLLW") 
 				{
-					moveSpeed *= -1;
+					Vector2 lineCastPosition = transform.position.toVector2 () - transform.right.toVector2 () * _Width + Vector2.up * _Height;
+
+					bool isGrounded = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.down, enemyMask);
+					bool isBlocked = Physics2D.Linecast (lineCastPosition, lineCastPosition - transform.right.toVector2 () * 0.05f, enemyMask);
+
+					//	If not grounded or blocked then turn around
+					if (!isGrounded || isBlocked) 
+					{
+						Vector3 currentRotation = transform.eulerAngles;
+						currentRotation.y += 180;
+						transform.eulerAngles = currentRotation;
+					}
+
+					//	Always move "forward" when not following player
+					Vector2 newVelcotiy = _Rigidbody2D.velocity;
+					newVelcotiy.x = -transform.right.x * moveSpeed * Time.fixedDeltaTime;
+
+					_Rigidbody2D.velocity = newVelcotiy;
 				}
 
-				//	Always move forward when not following player
-				Vector2 newVelcotiy = _Rigidbody2D.velocity;
-				newVelcotiy.y = -transform.up.y * moveSpeed * Time.fixedDeltaTime;
+				//	Movement for CYAN enemies (up and down)
+				if (!followPlayer && tag == "Enemy_CYAN")
+				{
+					Vector2 lineCastPosition = transform.position.toVector2 () - transform.right.toVector2 () * 0.0f * _Width + Vector2.up * _Height;
 
-				_Rigidbody2D.velocity = newVelcotiy;
+					bool isBlockedBottom = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.down * 0.9f, enemyMask);
+					bool isBlockedTop = Physics2D.Linecast (lineCastPosition, lineCastPosition + Vector2.up * 0.05f, enemyMask);
+
+					//	If not grounded or bloacked then turn around
+					if (isBlockedBottom || isBlockedTop) 
+					{
+						moveSpeed *= -1;
+					}
+
+					//	Always move forward when not following player
+					Vector2 newVelcotiy = _Rigidbody2D.velocity;
+					newVelcotiy.y = -transform.up.y * moveSpeed * Time.fixedDeltaTime;
+
+					_Rigidbody2D.velocity = newVelcotiy;
+				}
 			}
 		}
 	}

@@ -5,7 +5,7 @@ using System.Collections;
 /*																						*/
 /*	GameData: Stores player's preferences and current game state between levels			*/
 /*		Functions:																		*/
-/*			Start ()																	*/
+/*			Awake ()																	*/
 /*																						*/
 /*--------------------------------------------------------------------------------------*/
 public class GameData : MonoBehaviour {

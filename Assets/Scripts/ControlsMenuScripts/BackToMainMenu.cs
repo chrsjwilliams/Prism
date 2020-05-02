@@ -10,6 +10,7 @@ public class BackToMainMenu : MonoBehaviour {
 	{
 		if (SceneManager.GetActiveScene().name == "ControlsMenu" && Input.GetKeyDown(KeyCode.P))
 		{
+			Destroy (GameObject.Find ("GameData"));
 			SceneManager.LoadScene ("MainMenu", LoadSceneMode.Single);
 		}
 	}

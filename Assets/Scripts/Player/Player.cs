@@ -1,12 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
-
-/*
- * 
- * 	TODO:	AUDIO When charging
- * 			AUDIO when jumping
- * 
- */ 
 
 /*--------------------------------------------------------------------------------------*/
 /*																						*/
@@ -97,9 +91,12 @@ public class Player : MonoBehaviour
 			playerStats.playerBlue = playerStats.MAX_CHARGE;
 		}
 
-		GameData.gameData.storedPlayerRedCharge = playerStats.playerRed;
-		GameData.gameData.storedPlayerGreenCharge = playerStats.playerGreen;
-		GameData.gameData.storedPlayerBlueCharge = playerStats.playerBlue;
+		if (SceneManager.GetActiveScene ().name != "ControlsMenu")
+		{
+			GameData.gameData.storedPlayerRedCharge = playerStats.playerRed;
+			GameData.gameData.storedPlayerGreenCharge = playerStats.playerGreen;
+			GameData.gameData.storedPlayerBlueCharge = playerStats.playerBlue;
+		}
 
 	}
 

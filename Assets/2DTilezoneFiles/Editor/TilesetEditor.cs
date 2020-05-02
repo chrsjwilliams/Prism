@@ -479,7 +479,7 @@ public class TilesetEditor : EditorWindow {
 	}
 
 	void CheckForKeyboardShortcuts ( Event current ) {
-		if( current.type == EventType.keyDown ) {
+		if( current.type == EventType.KeyDown ) {
 			if( current.keyCode == noneShortcut )
 				toolSelected = TileTool.None;
 			if( current.keyCode == drawShortcut )
@@ -1682,7 +1682,7 @@ public class TileDrawer : PropertyDrawer {
 		if( property.isExpanded ) {
 			
 			Rect tileRect = new Rect( position.x + 4, position.y + 16, 64, 64 );
-			if( Event.current.type == EventType.repaint )
+			if( Event.current.type == EventType.Repaint )
 				DrawTile( property, tileRect );
 			if( GUI.Button( tileRect, GUIContent.none, GUIStyle.none ) ) {
 				Tile tileToCopy = ( TilesetEditor.autoTileSelected == -1 || tileLayer == null ) ? TilesetEditor.selectedTiles[0,0] : tileLayer.autoTileData[TilesetEditor.autoTileSelected * 48 + 21];
